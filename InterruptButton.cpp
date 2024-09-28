@@ -127,9 +127,10 @@ void IRAM_ATTR InterruptButton::readButton(void *arg){
       break;
 
     case ConfirmingPress:                                       // we get here each time the debounce timer expires (onchange interrupt disabled remember)
-      btn->m_totalPolls++;                                      // Count the number of total reads
-      if(gpio_get_level(btn->m_pin) == btn->m_pressedState) btn->m_validPolls++; // Count the number of valid 'PRESSED' reads
-      if(btn->m_totalPolls >= TARGET_POLLS){                   // If we have checked the button enough times, then make a decision on key state
+      btn->m_totalPolls = btn->m_totalPolls + 1;                // Count the number of total reads
+      if(gpio_get_level(btn->m_pin) == btn->m_pressedState) 
+        btn->m_validPolls = btn->m_validPolls + 1;              // Count the number of valid 'PRESSED' reads
+      if(btn->m_totalPolls >= TARGET_POLLS){                    // If we have checked the button enough times, then make a decision on key state
         if(btn->m_validPolls * 2 <= btn->m_totalPolls) {        // Then it was a false alarm
           btn->m_state = Released;                                        
           gpio_intr_enable(btn->m_pin);
@@ -161,16 +162,16 @@ void IRAM_ATTR InterruptButton::readButton(void *arg){
 
     case WaitingForRelease: // we get here when debounce timer or doubleclick timeout timer alarms (onchange interrupt disabled remember)
                             // stay in this state until released, because button could remain locked down if release missed.
-      btn->m_totalPolls++;
+      btn->m_totalPolls = btn->m_totalPolls + 1; 
       if(gpio_get_level(btn->m_pin) != btn->m_pressedState){
-        btn->m_validPolls++;
+        btn->m_validPolls = btn->m_validPolls + 1;
         if(btn->m_totalPolls < TARGET_POLLS || btn->m_validPolls * 2 <= btn->m_totalPolls) {           // If we haven't polled enough or not high enough success rate
           startTimer(btn->m_buttonPollTimer, btn->m_pollIntervalUS, &readButton, btn, "W4R_polling_");  // Then keep sampling pin state until release is confirmed
           return;
         }                                                       // Otherwise, spill through to "Releasing"
       } else {
         if(btn->m_validPolls > 0) {
-          btn->m_validPolls--;
+          btn->m_validPolls = btn->m_validPolls - 1;
         } else {
           btn->m_totalPolls = 0;                                // Key is being held down, don't let total polls get too far ahead.
         }
