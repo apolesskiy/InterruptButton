@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 
-FILE(GLOB_RECURSE app_sources "*.cpp")
-
 # Build InterruptButton as an ESP-IDF component
 if(ESP_PLATFORM)
-    idf_component_register(
-        SRCS ${app_sources}
-        INCLUDE_DIRS "."
-        #REQUIRES ${depends}
+idf_component_register(
+    SRCS "InterruptButton.cpp"
+    INCLUDE_DIRS "."
+    REQUIRES 
+        driver
+        esp_timer
         #PRIV_REQUIRES
     )
 return()
