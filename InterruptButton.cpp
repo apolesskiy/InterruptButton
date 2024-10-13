@@ -9,11 +9,16 @@
 
 
 #define ESP_INTR_FLAG_DEFAULT   0
-#define EVENT_TASK_PRIORITY     2             // One level higher than arduino's loop() which is priority level 1
-#define EVENT_TASK_STACK        4096          // Stack size associated with the queue servicer 
-#define EVENT_TASK_NAME         "BTN_ACTN"
-#define EVENT_TASK_CORE         1             // Same core as setup() and loop()
 
+#define EVENT_TASK_NAME         "BTN_ACTN"
+
+#ifndef INTERRUPTBUTTON_EVENT_TASK_PRIORITY
+#define INTERRUPTBUTTON_EVENT_TASK_PRIORITY     2
+#endif
+
+#ifndef INTERRUPTBUTTON_EVENT_TASK_CORE
+#define INTERRUPTBUTTON_EVENT_TASK_CORE         1             // Same core as setup() and loop()
+#endif
 static const char* TAG = "IBTN";              // IDF log tag
 
 
@@ -62,7 +67,7 @@ bool InterruptButton::setMode(modes mode){
       retVal = true;
     } else {
       retVal = xTaskCreatePinnedToCore(asyncQueueServicer, EVENT_TASK_NAME, m_RTOSservicerStackDepth, NULL, 
-                                       EVENT_TASK_PRIORITY, &m_asyncQueueServicerHandle, EVENT_TASK_CORE) == pdPASS;
+                                       INTERRUPTBUTTON_EVENT_TASK_PRIORITY, &m_asyncQueueServicerHandle, INTERRUPTBUTTON_EVENT_TASK_CORE) == pdPASS;
     }
     if(!retVal) ESP_LOGE(TAG, "setMode(): Failed to create RTOS queue servicing task!");
     return retVal;
@@ -432,4 +437,8 @@ void InterruptButton::setMenuLevel(uint8_t level) {
 
 uint8_t InterruptButton::getMenuLevel(){
   return m_menuLevel;
+}
+
+bool InterruptButton::isPressed() {
+  return m_state == Pressed || m_state == WaitingForRelease;
 }

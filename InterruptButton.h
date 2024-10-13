@@ -130,6 +130,7 @@ class InterruptButton {
                     uint32_t debounceUS =     8000);
     ~InterruptButton();                                               // Class Destructor
 
+    bool            isPressed();                                      // Is button currently pressed?
     void            enableEvent(events event);                        // Enable the event passed as argument (updates bitmask)
     void            disableEvent(events event);                       // Disable the event passed as argument (updates bitmask)
     bool            eventEnabled(events event);                       // Read bitmask and determine if event is enabled
